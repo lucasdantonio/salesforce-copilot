@@ -14,6 +14,7 @@ This inventory summarizes what was included in v1 and what was intentionally lef
 | `sf-org-drift-detector` | Skill | Reusable for shared-org drift checks |
 | `sf-sandbox-refresh-helper` | Skill | Reusable with documented `config/sandbox` convention |
 | `salesforce-release-packager.agent.md` | Agent | Portable after wording cleanup |
+| `salesforce-copilot-asset-evolver.agent.md` | Agent | Portable research-first specialist for evolving reusable Copilot assets |
 | `.github/scripts/salesforce/*.psm1` | Shared scripts | Required by multiple skills |
 
 ## Deferred from v1

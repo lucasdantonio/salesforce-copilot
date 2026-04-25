@@ -44,6 +44,7 @@ This repository packages practical **instructions**, **skills**, **agents**, and
 ### Agents
 
 - `salesforce-release-packager.agent.md`
+- `salesforce-copilot-asset-evolver.agent.md`
 
 ## Design goals
 
@@ -76,6 +77,7 @@ Some bundled scripts assume that layout. Where that assumption matters, it is do
 - Use `sf-metadata-healthcheck` for cheap metadata checks before review or deployment.
 - Use `sf-apex-test-runner` for safer Apex test-scope decisions.
 - Use `create-apex-test-class` when you want reusable Apex testing guidance without repo-local examples.
+- Use `salesforce-copilot-asset-evolver.agent.md` when you want a research-first specialist to identify relevant ecosystem changes and update the repository assets they affect.
 
 ## What is intentionally out of scope
 
