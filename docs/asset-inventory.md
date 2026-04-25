@@ -7,6 +7,7 @@ This inventory summarizes what was included in v1 and what was intentionally lef
 | Asset | Type | Portability notes |
 | --- | --- | --- |
 | `.github/instructions/*.md` | Instructions | Mostly portable after wording cleanup |
+| `copilot-asset-validator` | Skill | Self-contained validator for Copilot asset quality and portability checks |
 | `create-apex-test-class` | Skill | Generalized to remove repo-local class references |
 | `sf-apex-test-runner` | Skill | Reusable for standard Salesforce DX repositories |
 | `sf-delta-builder` | Skill | Reusable for standard manifest-based delta packaging |

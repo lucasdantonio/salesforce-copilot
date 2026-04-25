@@ -31,10 +31,15 @@ Avoid contributions that:
 - If a script depends on a convention, document it clearly.
 - If an asset is only safe for a narrow workflow, state that in the asset itself.
 
+## Authoring workflow
+
+Before opening a pull request, draft against the [asset authoring checklist](./docs/asset-authoring-checklist.md) and use the [asset type decision guide](./docs/asset-type-decision-guide.md) when deciding where new logic belongs.
+
 ## Pull request checklist
 
 - [ ] The change is reusable across multiple Salesforce DX projects.
 - [ ] Project-specific references were removed or documented as examples only.
+- [ ] `copilot-asset-validator` was run and any errors were fixed.
 - [ ] Relative links and bundled-resource references still work.
 - [ ] New or updated docs are written in English.
 - [ ] PowerShell scripts remain non-interactive unless interaction is the explicit purpose.
