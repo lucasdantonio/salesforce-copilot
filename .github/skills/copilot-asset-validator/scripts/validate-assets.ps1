@@ -263,6 +263,7 @@ function Get-MarkdownIgnoredRanges {
             continue
         }
 
+        # Closing fences may be longer than the opening fence, so build a minimum-length pattern.
         $closingFencePattern = '^\s*{0}{{{1},}}\s*$' -f [regex]::Escape($fenceMarker), $fenceLength
 
         if ($lineText -match $closingFencePattern) {
@@ -294,7 +295,7 @@ function Get-MarkdownIgnoredRanges {
 
         $lineText = $lineMatch.Value.TrimEnd("`r", "`n")
 
-        # Match inline code spans on a single line by pairing equal backtick runs.
+        # Match inline code spans on a single line by pairing the same opening and closing backtick run.
         foreach ($inlineMatch in [regex]::Matches($lineText, '(?<!`)(`+)(?!`).*?(?<!`)\1(?!`)')) {
             $ranges.Add([PSCustomObject]@{
                     Index  = $lineMatch.Index + $inlineMatch.Index
