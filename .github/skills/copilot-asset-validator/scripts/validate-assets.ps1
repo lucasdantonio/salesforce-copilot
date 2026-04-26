@@ -184,7 +184,7 @@ function Test-PortabilityPatterns {
         [string]$Content
     )
 
-    $codeBlockRanges = @([regex]::Matches($Content, '(?ms)^```.*?^```\s*$|^~~~.*?^~~~\s*$'))
+    $codeBlockRanges = @([regex]::Matches($Content, '(?ms)^(?<Fence>`{3,}|~{3,})[^\r\n]*\r?\n.*?^\k<Fence>\s*$'))
     $checks = @(
         @{
             Rule    = 'RepoLocalReference'
