@@ -237,6 +237,64 @@ function Test-PortabilityPatterns {
     }
 }
 
+function Get-MarkdownIgnoredRanges {
+    param(
+        [Parameter(Mandatory)]
+        [object]$Content
+    )
+
+    $contentString = [string]$Content
+    $ranges = New-Object 'System.Collections.Generic.List[object]'
+    $fencedCodeBlockMatches = @([regex]::Matches(
+        $contentString,
+        '(?ms)^(```+|~~~+).*$.*?^\1\s*$'
+    ))
+
+    foreach ($match in $fencedCodeBlockMatches) {
+        $ranges.Add($match)
+    }
+
+    $inlineCodeMatches = @([regex]::Matches(
+        $contentString,
+        '(?s)(?<!`)(`+)(?!`).*?(?<!`)\1(?!`)'
+    ))
+
+    foreach ($match in $inlineCodeMatches) {
+        $isInFencedCodeBlock = $false
+
+        foreach ($range in $fencedCodeBlockMatches) {
+            if ($match.Index -ge $range.Index -and $match.Index -lt ($range.Index + $range.Length)) {
+                $isInFencedCodeBlock = $true
+                break
+            }
+        }
+
+        if (-not $isInFencedCodeBlock) {
+            $ranges.Add($match)
+        }
+    }
+
+    return @($ranges.ToArray())
+}
+
+function Test-IndexInRanges {
+    param(
+        [Parameter(Mandatory)]
+        [int]$Index,
+
+        [Parameter(Mandatory)]
+        [object[]]$Ranges
+    )
+
+    foreach ($range in $Ranges) {
+        if ($Index -ge $range.Index -and $Index -lt ($range.Index + $range.Length)) {
+            return $true
+        }
+    }
+
+    return $false
+}
+
 function Test-MarkdownLinks {
     param(
         [Parameter(Mandatory)]
@@ -246,8 +304,13 @@ function Test-MarkdownLinks {
     $content = Get-Content -Path $Path -Raw
     $directory = Split-Path -Path $Path -Parent
     $linkMatches = [regex]::Matches($content, '!?[[][^]]*[]][(](?<dest>[^)]+)[)]')
+    $ignoredRanges = Get-MarkdownIgnoredRanges -Content $content
 
     foreach ($match in $linkMatches) {
+        if (Test-IndexInRanges -Index $match.Index -Ranges $ignoredRanges) {
+            continue
+        }
+
         $destination = $match.Groups['dest'].Value.Trim()
 
         if ($destination -match '^\s*<(?<inner>[^>]+)>\s*$') {
