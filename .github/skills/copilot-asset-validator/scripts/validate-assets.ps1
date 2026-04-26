@@ -243,10 +243,12 @@ function Get-MarkdownIgnoredRanges {
         [object]$Content
     )
 
-    $contentString = [string]$Content
+    $markdown = [string]$Content
     $ranges = New-Object 'System.Collections.Generic.List[object]'
+
+    # Match fenced code blocks so Markdown examples do not produce link findings.
     $fencedCodeBlockMatches = @([regex]::Matches(
-        $contentString,
+        $markdown,
         '(?ms)^(```+|~~~+).*$.*?^\1\s*$'
     ))
 
@@ -254,22 +256,14 @@ function Get-MarkdownIgnoredRanges {
         $ranges.Add($match)
     }
 
+    # Match inline code spans with balanced backtick runs outside fenced blocks.
     $inlineCodeMatches = @([regex]::Matches(
-        $contentString,
+        $markdown,
         '(?s)(?<!`)(`+)(?!`).*?(?<!`)\1(?!`)'
     ))
 
     foreach ($match in $inlineCodeMatches) {
-        $isInFencedCodeBlock = $false
-
-        foreach ($range in $fencedCodeBlockMatches) {
-            if ($match.Index -ge $range.Index -and $match.Index -lt ($range.Index + $range.Length)) {
-                $isInFencedCodeBlock = $true
-                break
-            }
-        }
-
-        if (-not $isInFencedCodeBlock) {
+        if (-not (Test-IndexInRanges -Index $match.Index -Ranges $fencedCodeBlockMatches)) {
             $ranges.Add($match)
         }
     }
@@ -282,7 +276,8 @@ function Test-IndexInRanges {
         [Parameter(Mandatory)]
         [int]$Index,
 
-        [Parameter(Mandatory)]
+        [Parameter()]
+        [AllowEmptyCollection()]
         [object[]]$Ranges
     )
 
