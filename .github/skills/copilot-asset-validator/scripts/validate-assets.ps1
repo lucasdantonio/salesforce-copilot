@@ -240,31 +240,66 @@ function Test-PortabilityPatterns {
 function Get-MarkdownIgnoredRanges {
     param(
         [Parameter(Mandatory)]
-        [object]$Content
+        [string]$Content
     )
 
-    $markdown = [string]$Content
     $ranges = New-Object 'System.Collections.Generic.List[object]'
+    $lineMatches = @([regex]::Matches($Content, '[^\r\n]*(?:\r?\n|$)'))
+    $fencedRanges = New-Object 'System.Collections.Generic.List[object]'
+    $fenceStartIndex = -1
+    $fenceMarker = $null
+    $fenceLength = 0
 
-    # Match fenced code blocks so Markdown examples do not produce link findings.
-    $fencedCodeBlockMatches = @([regex]::Matches(
-        $markdown,
-        '(?ms)^(```+|~~~+).*$.*?^\1\s*$'
-    ))
+    foreach ($lineMatch in $lineMatches) {
+        $lineText = $lineMatch.Value.TrimEnd("`r", "`n")
 
-    foreach ($match in $fencedCodeBlockMatches) {
-        $ranges.Add($match)
+        if ($fenceStartIndex -lt 0) {
+            if ($lineText -match '^\s*(?<fence>`{3,}|~{3,})(?:.*)?$') {
+                $fenceStartIndex = $lineMatch.Index
+                $fenceMarker = $Matches['fence'].Substring(0, 1)
+                $fenceLength = $Matches['fence'].Length
+            }
+
+            continue
+        }
+
+        $closingFencePattern = '^\s*{0}{{{1},}}\s*$' -f [regex]::Escape($fenceMarker), $fenceLength
+
+        if ($lineText -match $closingFencePattern) {
+            $range = [PSCustomObject]@{
+                Index  = $fenceStartIndex
+                Length = ($lineMatch.Index + $lineMatch.Length) - $fenceStartIndex
+            }
+            $fencedRanges.Add($range)
+            $ranges.Add($range)
+            $fenceStartIndex = -1
+            $fenceMarker = $null
+            $fenceLength = 0
+        }
     }
 
-    # Match inline code spans with balanced backtick runs outside fenced blocks.
-    $inlineCodeMatches = @([regex]::Matches(
-        $markdown,
-        '(?s)(?<!`)(`+)(?!`).*?(?<!`)\1(?!`)'
-    ))
+    if ($fenceStartIndex -ge 0) {
+        $range = [PSCustomObject]@{
+            Index  = $fenceStartIndex
+            Length = $Content.Length - $fenceStartIndex
+        }
+        $fencedRanges.Add($range)
+        $ranges.Add($range)
+    }
 
-    foreach ($match in $inlineCodeMatches) {
-        if (-not (Test-IndexInRanges -Index $match.Index -Ranges $fencedCodeBlockMatches)) {
-            $ranges.Add($match)
+    foreach ($lineMatch in $lineMatches) {
+        if (Test-IndexInRanges -Index $lineMatch.Index -Ranges $fencedRanges) {
+            continue
+        }
+
+        $lineText = $lineMatch.Value.TrimEnd("`r", "`n")
+
+        # Match inline code spans on a single line by pairing equal backtick runs.
+        foreach ($inlineMatch in [regex]::Matches($lineText, '(?<!`)(`+)(?!`).*?(?<!`)\1(?!`)')) {
+            $ranges.Add([PSCustomObject]@{
+                    Index  = $lineMatch.Index + $inlineMatch.Index
+                    Length = $inlineMatch.Length
+                })
         }
     }
 
