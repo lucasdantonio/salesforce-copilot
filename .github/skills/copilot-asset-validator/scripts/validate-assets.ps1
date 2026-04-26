@@ -402,11 +402,18 @@ if (Test-Path -Path $instructionRoot) {
     }
 }
 
-foreach ($markdownFile in (Get-ChildItem -Path $resolvedRoot -Filter '*.md' -Recurse -File | Sort-Object FullName)) {
+$directorySeparatorPattern = '[{0}{1}]' -f [regex]::Escape([IO.Path]::DirectorySeparatorChar), [regex]::Escape([IO.Path]::AltDirectorySeparatorChar)
+$excludedDirectoryPattern = '{0}(\.git|node_modules|bin|obj|vendor){0}' -f $directorySeparatorPattern
+
+foreach ($markdownFile in (Get-ChildItem -Path $resolvedRoot -Filter '*.md' -Recurse -File |
+        Where-Object { $_.FullName -notmatch $excludedDirectoryPattern } |
+        Sort-Object FullName)) {
     Test-MarkdownLinks -Path $markdownFile.FullName
 }
 
-foreach ($powerShellScript in (Get-ChildItem -Path $resolvedRoot -Filter '*.ps1' -Recurse -File | Sort-Object FullName)) {
+foreach ($powerShellScript in (Get-ChildItem -Path $resolvedRoot -Filter '*.ps1' -Recurse -File |
+        Where-Object { $_.FullName -notmatch $excludedDirectoryPattern } |
+        Sort-Object FullName)) {
     Test-PowerShellHelp -Path $powerShellScript.FullName
 }
 
