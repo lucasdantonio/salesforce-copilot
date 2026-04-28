@@ -15,7 +15,7 @@ param(
     [string]$TargetOrg,
 
     [Parameter()]
-    [string]$ConfigRoot = 'config\sandbox',
+    [string]$ConfigRoot,
 
     [Parameter()]
     [string[]]$Metadata = @('NamedCredential', 'ExternalCredential', 'CustomMetadata'),
@@ -28,6 +28,10 @@ Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
+
+if ([string]::IsNullOrWhiteSpace($ConfigRoot)) {
+    $ConfigRoot = Get-SandboxConfigRootRelativePath
+}
 
 if (-not (Get-Command -Name sf -ErrorAction SilentlyContinue)) {
     throw 'Salesforce CLI (sf) was not found in PATH.'

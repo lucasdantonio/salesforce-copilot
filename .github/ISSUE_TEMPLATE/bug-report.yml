@@ -1,0 +1,40 @@
+name: Bug report
+description: Report a defect in a reusable Copilot asset, script, or doc.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the problem and the affected asset.
+    validations:
+      required: true
+  - type: input
+    id: asset-path
+    attributes:
+      label: Affected path
+      description: Example: .github/skills/sf-delta-builder/SKILL.md
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Include prompts, commands, or file patterns that show the issue.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: checkboxes
+    id: portability
+    attributes:
+      label: Portability checks
+      options:
+        - label: I confirmed this issue is not caused by a repo-specific customization.
+          required: true
+        - label: I included any path or environment assumptions needed to reproduce the issue.
+          required: false

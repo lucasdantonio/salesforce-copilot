@@ -1,0 +1,13 @@
+[
+  {
+    "Username": "integration.user@example.invalid",
+    "Email": "integration.user@example.invalid",
+    "LastName": "Integration",
+    "Alias": "intusr",
+    "ProfileName": "Standard User",
+    "TimeZoneSidKey": "America/Los_Angeles",
+    "LocaleSidKey": "en_US",
+    "EmailEncodingKey": "UTF-8",
+    "LanguageLocaleKey": "en_US"
+  }
+]

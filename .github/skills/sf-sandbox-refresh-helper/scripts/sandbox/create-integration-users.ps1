@@ -3,7 +3,7 @@
 Creates or updates integration users in a sandbox from JSON config.
 
 .DESCRIPTION
-Reads user definitions from config/sandbox/integration-users.json, generates
+Reads user definitions from the configured sandbox root, generates
 anonymous Apex, and upserts the users by Username.
 
 .EXAMPLE
@@ -15,7 +15,7 @@ param(
     [string]$TargetOrg,
 
     [Parameter()]
-    [string]$ConfigPath = 'config\sandbox\integration-users.json',
+    [string]$ConfigPath,
 
     [Parameter()]
     [switch]$DryRun
@@ -25,6 +25,10 @@ Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
+
+if ([string]::IsNullOrWhiteSpace($ConfigPath)) {
+    $ConfigPath = Join-Path -Path (Get-SandboxConfigRootRelativePath) -ChildPath 'integration-users.json'
+}
 
 function ConvertTo-ApexString {
     param(
@@ -80,7 +84,7 @@ foreach ($user in $users) {
 $apexLines.Add('if (!usersToInsert.isEmpty()) insert usersToInsert;')
 $apexLines.Add('if (!usersToUpdate.isEmpty()) update usersToUpdate;')
 
-$tempApexPath = Join-Path -Path $repositoryRoot -ChildPath '.sf\sandbox\create-integration-users.apex'
+$tempApexPath = Join-Path -Path $repositoryRoot -ChildPath (Join-Path -Path (Get-WorkingRootRelativePath) -ChildPath 'create-integration-users.apex')
 $tempDirectory = Split-Path -Path $tempApexPath -Parent
 
 if (-not (Test-Path -Path $tempDirectory)) {

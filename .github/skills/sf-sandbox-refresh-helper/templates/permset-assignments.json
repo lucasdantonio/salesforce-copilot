@@ -1,0 +1,9 @@
+[
+  {
+    "Username": "integration.user@example.invalid",
+    "PermissionSets": [
+      "Integration_User",
+      "API_Access"
+    ]
+  }
+]

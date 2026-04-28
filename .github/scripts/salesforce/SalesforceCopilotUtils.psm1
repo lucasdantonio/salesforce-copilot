@@ -1,5 +1,73 @@
 Set-StrictMode -Version 3.0
 
+function Normalize-SalesforceCopilotRelativePath {
+    param(
+        [Parameter()]
+        [AllowEmptyString()]
+        [string]$Path,
+
+        [Parameter()]
+        [string]$Default = ''
+    )
+
+    $effectivePath = if ([string]::IsNullOrWhiteSpace($Path)) { $Default } else { $Path }
+    $normalizedPath = $effectivePath.Replace('\', '/').Trim()
+
+    if ($normalizedPath.StartsWith('./', [System.StringComparison]::Ordinal)) {
+        $normalizedPath = $normalizedPath.Substring(2)
+    }
+
+    $normalizedPath.Trim('/')
+}
+
+function Get-SalesforceCopilotConfiguration {
+    [CmdletBinding()]
+    param()
+
+    $metadataRoot = Normalize-SalesforceCopilotRelativePath -Path $env:SALESFORCE_COPILOT_METADATA_ROOT -Default 'force-app/main/default'
+    $manifestPath = Normalize-SalesforceCopilotRelativePath -Path $env:SALESFORCE_COPILOT_MANIFEST_PATH -Default 'manifest/package.xml'
+    $sandboxConfigRoot = Normalize-SalesforceCopilotRelativePath -Path $env:SALESFORCE_COPILOT_SANDBOX_CONFIG_ROOT -Default 'config/sandbox'
+    $workingRoot = Normalize-SalesforceCopilotRelativePath -Path $env:SALESFORCE_COPILOT_WORK_ROOT -Default '.sf/copilot'
+    $manifestDirectory = Normalize-SalesforceCopilotRelativePath -Path (Split-Path -Path $manifestPath -Parent)
+
+    if ([string]::IsNullOrWhiteSpace($manifestDirectory)) {
+        $manifestDirectory = '.'
+    }
+
+    [PSCustomObject]@{
+        MetadataRoot      = $metadataRoot
+        MetadataRootRegex = '^' + [regex]::Escape($metadataRoot) + '/'
+        ManifestPath      = $manifestPath
+        ManifestDirectory = $manifestDirectory
+        SandboxConfigRoot = $sandboxConfigRoot
+        WorkingRoot       = $workingRoot
+    }
+}
+
+function Get-MetadataRootRelativePath {
+    (Get-SalesforceCopilotConfiguration).MetadataRoot
+}
+
+function Get-MetadataRootRegex {
+    (Get-SalesforceCopilotConfiguration).MetadataRootRegex
+}
+
+function Get-ManifestRelativePath {
+    (Get-SalesforceCopilotConfiguration).ManifestPath
+}
+
+function Get-ManifestDirectoryRelativePath {
+    (Get-SalesforceCopilotConfiguration).ManifestDirectory
+}
+
+function Get-SandboxConfigRootRelativePath {
+    (Get-SalesforceCopilotConfiguration).SandboxConfigRoot
+}
+
+function Get-WorkingRootRelativePath {
+    (Get-SalesforceCopilotConfiguration).WorkingRoot
+}
+
 function Get-RepositoryRoot {
     $repositoryRoot = & git --no-pager rev-parse --show-toplevel 2>$null
 
@@ -16,7 +84,7 @@ function Get-DefaultPackageVersion {
         [string]$RepositoryRoot = (Get-RepositoryRoot)
     )
 
-    $packagePath = Join-Path -Path $RepositoryRoot -ChildPath 'manifest\package.xml'
+    $packagePath = Join-Path -Path $RepositoryRoot -ChildPath (Get-ManifestRelativePath)
 
     if (-not (Test-Path -Path $packagePath)) {
         return '55.0'
@@ -109,126 +177,130 @@ function Get-SalesforceMetadataDescriptor {
 
     $relativePath = Get-NormalizedRelativePath -Path $Path
 
-    if ($relativePath -notlike 'force-app/main/default/*') {
+    $config = Get-SalesforceCopilotConfiguration
+    $metadataRoot = $config.MetadataRoot
+    $metadataRootPattern = [regex]::Escape($metadataRoot)
+
+    if ($relativePath -notlike "$metadataRoot/*") {
         return $null
     }
 
     $descriptor = $null
 
     switch -Regex ($relativePath) {
-        '^force-app/main/default/classes/([^/]+)\.cls(?:-meta\.xml)?$' {
+        "^$metadataRootPattern/classes/([^/]+)\.cls(?:-meta\.xml)?$" {
             $descriptor = [PSCustomObject]@{ Type = 'ApexClass'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/triggers/([^/]+)\.trigger(?:-meta\.xml)?$' {
+        "^$metadataRootPattern/triggers/([^/]+)\.trigger(?:-meta\.xml)?$" {
             $descriptor = [PSCustomObject]@{ Type = 'ApexTrigger'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/pages/([^/]+)\.page(?:-meta\.xml)?$' {
+        "^$metadataRootPattern/pages/([^/]+)\.page(?:-meta\.xml)?$" {
             $descriptor = [PSCustomObject]@{ Type = 'ApexPage'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/components/([^/]+)\.component(?:-meta\.xml)?$' {
+        "^$metadataRootPattern/components/([^/]+)\.component(?:-meta\.xml)?$" {
             $descriptor = [PSCustomObject]@{ Type = 'ApexComponent'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/lwc/([^/]+)/' {
+        "^$metadataRootPattern/lwc/([^/]+)/" {
             $descriptor = [PSCustomObject]@{ Type = 'LightningComponentBundle'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/aura/([^/]+)/' {
+        "^$metadataRootPattern/aura/([^/]+)/" {
             $descriptor = [PSCustomObject]@{ Type = 'AuraDefinitionBundle'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/flows/([^/]+)\.flow-meta\.xml$' {
+        "^$metadataRootPattern/flows/([^/]+)\.flow-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'Flow'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/flowDefinitions/([^/]+)\.flowDefinition-meta\.xml$' {
+        "^$metadataRootPattern/flowDefinitions/([^/]+)\.flowDefinition-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'FlowDefinition'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/permissionsets/([^/]+)\.permissionset-meta\.xml$' {
+        "^$metadataRootPattern/permissionsets/([^/]+)\.permissionset-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'PermissionSet'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/profiles/([^/]+)\.profile-meta\.xml$' {
+        "^$metadataRootPattern/profiles/([^/]+)\.profile-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'Profile'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/layouts/([^/]+)\.layout-meta\.xml$' {
+        "^$metadataRootPattern/layouts/([^/]+)\.layout-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'Layout'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/tabs/([^/]+)\.tab-meta\.xml$' {
+        "^$metadataRootPattern/tabs/([^/]+)\.tab-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'CustomTab'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/flexipages/([^/]+)\.flexipage-meta\.xml$' {
+        "^$metadataRootPattern/flexipages/([^/]+)\.flexipage-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'FlexiPage'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/messageChannels/([^/]+)\.messageChannel-meta\.xml$' {
+        "^$metadataRootPattern/messageChannels/([^/]+)\.messageChannel-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'LightningMessageChannel'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/contentassets/([^/]+)\.asset-meta\.xml$' {
+        "^$metadataRootPattern/contentassets/([^/]+)\.asset-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'ContentAsset'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/staticresources/([^/]+)\.resource-meta\.xml$' {
+        "^$metadataRootPattern/staticresources/([^/]+)\.resource-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'StaticResource'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/staticresources/([^/]+)\.resource$' {
+        "^$metadataRootPattern/staticresources/([^/]+)\.resource$" {
             $descriptor = [PSCustomObject]@{ Type = 'StaticResource'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/staticresources/([^/]+)/' {
+        "^$metadataRootPattern/staticresources/([^/]+)/" {
             $descriptor = [PSCustomObject]@{ Type = 'StaticResource'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/applications/([^/]+)\.app-meta\.xml$' {
+        "^$metadataRootPattern/applications/([^/]+)\.app-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'CustomApplication'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/objects/([^/]+)/fields/([^/]+)\.field-meta\.xml$' {
+        "^$metadataRootPattern/objects/([^/]+)/fields/([^/]+)\.field-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'CustomField'; Member = '{0}.{1}' -f $Matches[1], $Matches[2]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/objects/([^/]+)/recordTypes/([^/]+)\.recordType-meta\.xml$' {
+        "^$metadataRootPattern/objects/([^/]+)/recordTypes/([^/]+)\.recordType-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'RecordType'; Member = '{0}.{1}' -f $Matches[1], $Matches[2]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/objects/([^/]+)/validationRules/([^/]+)\.validationRule-meta\.xml$' {
+        "^$metadataRootPattern/objects/([^/]+)/validationRules/([^/]+)\.validationRule-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'ValidationRule'; Member = '{0}.{1}' -f $Matches[1], $Matches[2]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/objects/([^/]+)/listViews/([^/]+)\.listView-meta\.xml$' {
+        "^$metadataRootPattern/objects/([^/]+)/listViews/([^/]+)\.listView-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'ListView'; Member = '{0}.{1}' -f $Matches[1], $Matches[2]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/objects/([^/]+)/compactLayouts/([^/]+)\.compactLayout-meta\.xml$' {
+        "^$metadataRootPattern/objects/([^/]+)/compactLayouts/([^/]+)\.compactLayout-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'CompactLayout'; Member = '{0}.{1}' -f $Matches[1], $Matches[2]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/objects/([^/]+)/businessProcesses/([^/]+)\.businessProcess-meta\.xml$' {
+        "^$metadataRootPattern/objects/([^/]+)/businessProcesses/([^/]+)\.businessProcess-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'BusinessProcess'; Member = '{0}.{1}' -f $Matches[1], $Matches[2]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/objects/([^/]+)/sharingReasons/([^/]+)\.sharingReason-meta\.xml$' {
+        "^$metadataRootPattern/objects/([^/]+)/sharingReasons/([^/]+)\.sharingReason-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'SharingReason'; Member = '{0}.{1}' -f $Matches[1], $Matches[2]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/objects/([^/]+)/webLinks/([^/]+)\.webLink-meta\.xml$' {
+        "^$metadataRootPattern/objects/([^/]+)/webLinks/([^/]+)\.webLink-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'WebLink'; Member = '{0}.{1}' -f $Matches[1], $Matches[2]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/objects/([^/]+)/([^/]+)\.object-meta\.xml$' {
+        "^$metadataRootPattern/objects/([^/]+)/([^/]+)\.object-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'CustomObject'; Member = $Matches[1]; RelativePath = $relativePath }
             break
         }
-        '^force-app/main/default/labels/CustomLabels\.labels-meta\.xml$' {
+        "^$metadataRootPattern/labels/CustomLabels\.labels-meta\.xml$" {
             $descriptor = [PSCustomObject]@{ Type = 'CustomLabels'; Member = 'CustomLabels'; RelativePath = $relativePath }
             break
         }
@@ -314,4 +386,4 @@ function New-PackageXmlContent {
     ($lines -join [System.Environment]::NewLine) + [System.Environment]::NewLine
 }
 
-Export-ModuleMember -Function Get-RepositoryRoot, Get-DefaultPackageVersion, Get-GitDiffEntry, Get-NormalizedRelativePath, Get-SalesforceMetadataDescriptor, Get-ChangedMetadataDescriptor, New-PackageXmlContent
+Export-ModuleMember -Function Get-SalesforceCopilotConfiguration, Get-MetadataRootRelativePath, Get-MetadataRootRegex, Get-ManifestRelativePath, Get-ManifestDirectoryRelativePath, Get-SandboxConfigRootRelativePath, Get-WorkingRootRelativePath, Get-RepositoryRoot, Get-DefaultPackageVersion, Get-GitDiffEntry, Get-NormalizedRelativePath, Get-SalesforceMetadataDescriptor, Get-ChangedMetadataDescriptor, New-PackageXmlContent

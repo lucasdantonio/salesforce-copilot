@@ -25,6 +25,7 @@ $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
 
 $entries = @(Get-GitDiffEntry -BaseRef $BaseRef -HeadRef $HeadRef)
+$metadataRootPattern = [regex]::Escape((Get-MetadataRootRelativePath))
 $fieldDescriptors = @(
     $entries |
         ForEach-Object { Get-SalesforceMetadataDescriptor -Path $_.Path } |
@@ -37,9 +38,9 @@ if ($fieldDescriptors.Count -eq 0) {
     return
 }
 
-$permissionMetadataChanged = $entries.Path -match '^force-app/main/default/(permissionsets|profiles)/'
+$permissionMetadataChanged = $entries.Path -match "^$metadataRootPattern/(permissionsets|profiles)/"
 $repositoryRoot = Get-RepositoryRoot
-$accessFiles = Get-ChildItem -Path (Join-Path -Path $repositoryRoot -ChildPath 'force-app\main\default') -Recurse -File -Include '*.permissionset-meta.xml', '*.profile-meta.xml'
+$accessFiles = Get-ChildItem -Path (Join-Path -Path $repositoryRoot -ChildPath (Get-MetadataRootRelativePath)) -Recurse -File -Include '*.permissionset-meta.xml', '*.profile-meta.xml'
 
 $findings = @(foreach ($field in $fieldDescriptors) {
     $fieldFound = Select-String -Path $accessFiles.FullName -Pattern ([regex]::Escape($field.Member)) -Quiet

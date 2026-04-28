@@ -1,0 +1,4 @@
+Found 1 likely hardcoded Salesforce ID value.
+Found 2 custom fields that may need permission review.
+Found 1 flow file with API version drift.
+No duplicate metadata members were found.

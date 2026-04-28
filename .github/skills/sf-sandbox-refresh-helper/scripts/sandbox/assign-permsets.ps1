@@ -3,7 +3,7 @@
 Assigns permission sets after a sandbox refresh from JSON config.
 
 .DESCRIPTION
-Reads assignments from config/sandbox/permset-assignments.json and generates
+Reads assignments from the configured sandbox root and generates
 anonymous Apex to insert missing PermissionSetAssignment records.
 
 .EXAMPLE
@@ -15,7 +15,7 @@ param(
     [string]$TargetOrg,
 
     [Parameter()]
-    [string]$ConfigPath = 'config\sandbox\permset-assignments.json',
+    [string]$ConfigPath,
 
     [Parameter()]
     [switch]$DryRun
@@ -25,6 +25,10 @@ Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
+
+if ([string]::IsNullOrWhiteSpace($ConfigPath)) {
+    $ConfigPath = Join-Path -Path (Get-SandboxConfigRootRelativePath) -ChildPath 'permset-assignments.json'
+}
 
 function ConvertTo-ApexString {
     param(
@@ -69,7 +73,7 @@ foreach ($assignment in $assignments) {
 
 $apexLines.Add('if (!assignmentsToInsert.isEmpty()) insert assignmentsToInsert;')
 
-$tempApexPath = Join-Path -Path $repositoryRoot -ChildPath '.sf\sandbox\assign-permsets.apex'
+$tempApexPath = Join-Path -Path $repositoryRoot -ChildPath (Join-Path -Path (Get-WorkingRootRelativePath) -ChildPath 'assign-permsets.apex')
 $tempDirectory = Split-Path -Path $tempApexPath -Parent
 
 if (-not (Test-Path -Path $tempDirectory)) {

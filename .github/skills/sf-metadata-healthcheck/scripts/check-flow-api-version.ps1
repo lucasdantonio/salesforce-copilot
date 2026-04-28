@@ -24,9 +24,10 @@ $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
 
 $targetVersion = [decimal](Get-DefaultPackageVersion)
+$metadataRootPattern = [regex]::Escape((Get-MetadataRootRelativePath))
 $changedFlows = @(
     Get-GitDiffEntry -BaseRef $BaseRef -HeadRef $HeadRef |
-        Where-Object { $_.Path -match '^force-app/main/default/flows/.+\.flow-meta\.xml$' } |
+        Where-Object { $_.Path -match "^$metadataRootPattern/flows/.+\.flow-meta\.xml$" } |
         Select-Object -ExpandProperty Path -Unique
 )
 

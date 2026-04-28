@@ -26,12 +26,13 @@ $ErrorActionPreference = 'Stop'
 
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
 
+$metadataRoot = Get-MetadataRootRelativePath
 $entries = @(Get-GitDiffEntry -BaseRef $BaseRef -HeadRef $HeadRef -IncludeUntracked:$IncludeUntracked.IsPresent)
 $metadata = @(Get-ChangedMetadataDescriptor -BaseRef $BaseRef -HeadRef $HeadRef -IncludeUntracked:$IncludeUntracked.IsPresent)
 $unmapped = @(foreach ($entry in $entries) {
     $relativePath = Get-NormalizedRelativePath -Path $entry.Path
 
-    if ($relativePath -like 'force-app/main/default/*' -and $null -eq (Get-SalesforceMetadataDescriptor -Path $entry.Path)) {
+    if ($relativePath -like "$metadataRoot/*" -and $null -eq (Get-SalesforceMetadataDescriptor -Path $entry.Path)) {
         [PSCustomObject]@{
             Status = $entry.Status
             Path   = $relativePath
@@ -63,6 +64,6 @@ $metadata | Group-Object -Property Type | Sort-Object Name | ForEach-Object {
 
 if ($unmapped.Count -gt 0) {
     Write-Output ''
-    Write-Warning ("Found {0} unmapped file(s) under force-app/main/default. Review these before deploying." -f $unmapped.Count)
+    Write-Warning ("Found {0} unmapped file(s) under {1}. Review these before deploying." -f $unmapped.Count, $metadataRoot)
     $unmapped | Sort-Object Path
 }

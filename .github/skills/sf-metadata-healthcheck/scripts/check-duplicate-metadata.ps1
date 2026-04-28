@@ -18,7 +18,7 @@ $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
 
 $repositoryRoot = Get-RepositoryRoot
-$sourceRoot = Join-Path -Path $repositoryRoot -ChildPath 'force-app\main\default'
+$sourceRoot = Join-Path -Path $repositoryRoot -ChildPath (Get-MetadataRootRelativePath)
 
 $filePatterns = @(
     '*.cls',

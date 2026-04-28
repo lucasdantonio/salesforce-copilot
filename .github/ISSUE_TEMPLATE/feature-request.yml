@@ -1,0 +1,47 @@
+name: Feature request
+description: Suggest a reusable improvement for instructions, skills, agents, docs, or shared scripts.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Explain the user workflow or gap.
+    validations:
+      required: true
+  - type: dropdown
+    id: asset-type
+    attributes:
+      label: Asset type
+      options:
+        - Instruction
+        - Skill
+        - Agent
+        - Shared script
+        - Documentation
+        - Community health
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Keep the proposal portable across Salesforce DX repos.
+    validations:
+      required: true
+  - type: textarea
+    id: impacted-paths
+    attributes:
+      label: Likely paths to update
+      description: List files or folders if you know them.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Reusability checks
+      options:
+        - label: This request avoids org-specific names, usernames, or internal prefixes.
+          required: true
+        - label: This request fits the repository scope for reusable Salesforce Copilot assets.
+          required: true

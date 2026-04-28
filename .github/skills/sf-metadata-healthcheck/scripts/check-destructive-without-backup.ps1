@@ -46,7 +46,7 @@ foreach ($entry in Get-GitDiffEntry -BaseRef $BaseRef -HeadRef $HeadRef) {
     }
 }
 
-$manifests = Get-ChildItem -Path (Join-Path -Path $repositoryRoot -ChildPath 'manifest') -Filter 'destructiveChanges*.xml' -File -ErrorAction SilentlyContinue
+$manifests = Get-ChildItem -Path (Join-Path -Path $repositoryRoot -ChildPath (Get-ManifestDirectoryRelativePath)) -Filter 'destructiveChanges*.xml' -File -ErrorAction SilentlyContinue
 
 if ($manifests.Count -eq 0) {
     Write-Output 'No destructiveChanges manifests were found.'

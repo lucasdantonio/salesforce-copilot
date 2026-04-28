@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/lucasdantonio/salesforce-copilot/security
+    about: Use private security reporting instead of public issues for vulnerabilities.

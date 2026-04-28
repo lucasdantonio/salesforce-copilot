@@ -27,7 +27,8 @@ $ErrorActionPreference = 'Stop'
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
 
 $entries = @(Get-GitDiffEntry -BaseRef $BaseRef -HeadRef $HeadRef)
-$profilePaths = @($entries.Path | Where-Object { $_ -match '^force-app/main/default/profiles/.+\.profile-meta\.xml$' } | Sort-Object -Unique)
+$metadataRootPattern = [regex]::Escape((Get-MetadataRootRelativePath))
+$profilePaths = @($entries.Path | Where-Object { $_ -match "^$metadataRootPattern/profiles/.+\.profile-meta\.xml$" } | Sort-Object -Unique)
 
 if ($profilePaths.Count -eq 0) {
     Write-Output 'No changed profiles were found.'
@@ -36,7 +37,7 @@ if ($profilePaths.Count -eq 0) {
 
 $nonProfileMetadata = @(
     $entries.Path |
-        Where-Object { $_ -match '^force-app/main/default/' -and $_ -notmatch '^force-app/main/default/profiles/' }
+        Where-Object { $_ -match "^$metadataRootPattern/" -and $_ -notmatch "^$metadataRootPattern/profiles/" }
 )
 
 $findings = @(foreach ($profilePath in $profilePaths) {

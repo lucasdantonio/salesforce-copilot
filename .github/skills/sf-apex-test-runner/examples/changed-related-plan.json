@@ -1,0 +1,8 @@
+{
+  "Mode": "changed-related",
+  "Reason": "Related tests were discovered from changed metadata and class references.",
+  "Tests": [
+    "AccountDomainTest",
+    "AccountTriggerHandlerTest"
+  ]
+}

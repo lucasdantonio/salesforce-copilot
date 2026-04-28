@@ -7,7 +7,7 @@ Maps deleted metadata files, and renamed metadata when the member name changes,
 to destructiveChanges members and writes a generated destructiveChanges manifest.
 
 .EXAMPLE
-.\build-destructive-changes.ps1 -BaseRef origin/main -HeadRef HEAD -OutputPath manifest\destructiveChangesPost.delta.xml
+.\build-destructive-changes.ps1 -BaseRef origin/main -HeadRef HEAD -OutputPath manifest/destructiveChangesPost.delta.xml
 #>
 [CmdletBinding()]
 param(
@@ -18,13 +18,17 @@ param(
     [string]$HeadRef = 'HEAD',
 
     [Parameter()]
-    [string]$OutputPath = 'manifest\destructiveChangesPost.delta.xml'
+    [string]$OutputPath
 )
 
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
+
+if ([string]::IsNullOrWhiteSpace($OutputPath)) {
+    $OutputPath = (Join-Path -Path (Get-ManifestDirectoryRelativePath) -ChildPath 'destructiveChangesPost.delta.xml')
+}
 
 $destructiveMetadata = New-Object 'System.Collections.Generic.List[object]'
 

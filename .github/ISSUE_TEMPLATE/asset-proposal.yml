@@ -1,0 +1,44 @@
+name: New asset proposal
+description: Propose a new reusable Copilot skill, instruction, or agent.
+title: "asset: "
+labels:
+  - enhancement
+  - asset
+body:
+  - type: input
+    id: asset-name
+    attributes:
+      label: Proposed asset name
+      description: Use a portable, descriptive name.
+    validations:
+      required: true
+  - type: textarea
+    id: when-to-use
+    attributes:
+      label: When should Copilot use it?
+      description: Describe the discovery triggers and workflows.
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: Why is it valuable?
+      description: Explain the gap it fills for multiple Salesforce DX repositories.
+    validations:
+      required: true
+  - type: textarea
+    id: bundled-resources
+    attributes:
+      label: Bundled resources
+      description: List scripts, examples, templates, or references that should ship with the asset.
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety and maintenance
+      options:
+        - label: The proposal can be documented in English.
+          required: true
+        - label: The proposal does not require company-specific secrets or infrastructure.
+          required: true
+        - label: Any path conventions can be documented or made configurable.
+          required: true

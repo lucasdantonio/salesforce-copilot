@@ -1,0 +1,14 @@
+Delta summary for origin/main -> HEAD
+Files changed: 6
+Mapped metadata members: 4
+
+Changes by git status:
+- A: 3
+- D: 1
+- M: 2
+
+Metadata by type:
+- ApexClass: 1
+- Flow: 1
+- LightningComponentBundle: 1
+- PermissionSet: 1

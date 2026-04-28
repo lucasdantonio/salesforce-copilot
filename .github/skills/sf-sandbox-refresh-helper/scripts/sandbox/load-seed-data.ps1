@@ -14,7 +14,7 @@ param(
     [string]$TargetOrg,
 
     [Parameter()]
-    [string]$PlanPath = 'config\sandbox\seed-data-plan.json',
+    [string]$PlanPath,
 
     [Parameter()]
     [switch]$DryRun
@@ -24,6 +24,10 @@ Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
+
+if ([string]::IsNullOrWhiteSpace($PlanPath)) {
+    $PlanPath = Join-Path -Path (Get-SandboxConfigRootRelativePath) -ChildPath 'seed-data-plan.json'
+}
 
 $repositoryRoot = Get-RepositoryRoot
 $planFullPath = Join-Path -Path $repositoryRoot -ChildPath $PlanPath

@@ -7,7 +7,7 @@ Maps added, modified, copied, and renamed metadata files to Salesforce metadata
 members and writes a generated package.xml file.
 
 .EXAMPLE
-.\build-package-xml.ps1 -BaseRef origin/main -HeadRef HEAD -OutputPath manifest\package.delta.xml
+.\build-package-xml.ps1 -BaseRef origin/main -HeadRef HEAD -OutputPath manifest/package.delta.xml
 #>
 [CmdletBinding()]
 param(
@@ -18,7 +18,7 @@ param(
     [string]$HeadRef = 'HEAD',
 
     [Parameter()]
-    [string]$OutputPath = 'manifest\package.delta.xml',
+    [string]$OutputPath,
 
     [Parameter()]
     [switch]$IncludeUntracked
@@ -28,6 +28,10 @@ Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
+
+if ([string]::IsNullOrWhiteSpace($OutputPath)) {
+    $OutputPath = (Join-Path -Path (Get-ManifestDirectoryRelativePath) -ChildPath 'package.delta.xml')
+}
 
 $metadata = @(Get-ChangedMetadataDescriptor -BaseRef $BaseRef -HeadRef $HeadRef -IncludeUntracked:$IncludeUntracked.IsPresent |
     Where-Object { $_.Status -in @('A', 'M', 'C', 'R') } |

@@ -4,7 +4,7 @@ Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'SalesforceCopilotUtils.
 
 function Get-ApexClassInventory {
     $repositoryRoot = Get-RepositoryRoot
-    $classRoot = Join-Path -Path $repositoryRoot -ChildPath 'force-app\main\default\classes'
+    $classRoot = Join-Path -Path $repositoryRoot -ChildPath (Join-Path -Path (Get-MetadataRootRelativePath) -ChildPath 'classes')
 
     if (-not (Test-Path -Path $classRoot)) {
         return @()
@@ -34,15 +34,16 @@ function Find-RelatedApexTest {
     $inventory = @(Get-ApexClassInventory)
     $tests = @($inventory | Where-Object { $_.IsTest })
     $candidates = New-Object 'System.Collections.Generic.HashSet[string]'
+    $metadataRootPattern = [regex]::Escape((Get-MetadataRootRelativePath))
 
     foreach ($path in $ChangedPath) {
         $relativePath = Get-NormalizedRelativePath -Path $path
         $descriptor = Get-SalesforceMetadataDescriptor -Path $relativePath
         $baseName = [System.IO.Path]::GetFileNameWithoutExtension($relativePath)
 
-        if ($relativePath -match '^force-app/main/default/classes/([^/]+)\.cls$') {
+        if ($relativePath -match "^$metadataRootPattern/classes/([^/]+)\.cls$") {
             $baseName = $Matches[1]
-        } elseif ($relativePath -match '^force-app/main/default/triggers/([^/]+)\.trigger$') {
+        } elseif ($relativePath -match "^$metadataRootPattern/triggers/([^/]+)\.trigger$") {
             $baseName = $Matches[1]
         }
 
@@ -128,10 +129,11 @@ function Get-ApexTestPlan {
 
     $entries = @(Get-GitDiffEntry -BaseRef $BaseRef -HeadRef $HeadRef)
     $changedPaths = @($entries.Path)
+    $metadataRootPattern = [regex]::Escape((Get-MetadataRootRelativePath))
 
     $relevantPaths = @(
         $changedPaths | Where-Object {
-            $_ -match '^force-app/main/default/(classes|triggers|pages|components|lwc|aura|flows|objects|permissionsets|profiles|layouts)/'
+            $_ -match "^$metadataRootPattern/(classes|triggers|pages|components|lwc|aura|flows|objects|permissionsets|profiles|layouts)/"
         }
     )
 
@@ -146,9 +148,9 @@ function Get-ApexTestPlan {
     $allTestFiles = @(Get-ApexClassInventory | Where-Object { $_.IsTest })
     $changedTestNames = @(
         $entries |
-            Where-Object { $_.Path -match '^force-app/main/default/classes/([^/]+)\.cls$' } |
+            Where-Object { $_.Path -match "^$metadataRootPattern/classes/([^/]+)\.cls$" } |
             ForEach-Object {
-                if ($_.Path -match '^force-app/main/default/classes/([^/]+)\.cls$') {
+                if ($_.Path -match "^$metadataRootPattern/classes/([^/]+)\.cls$") {
                     $Matches[1]
                 }
             } |
@@ -169,13 +171,13 @@ function Get-ApexTestPlan {
         $broadImpact = $true
     }
 
-    if ($changedPaths -match '^force-app/main/default/triggers/' -or
-        $changedPaths -match '^force-app/main/default/objects/' -or
-        $changedPaths -match '^force-app/main/default/flows/') {
+    if ($changedPaths -match "^$metadataRootPattern/triggers/" -or
+        $changedPaths -match "^$metadataRootPattern/objects/" -or
+        $changedPaths -match "^$metadataRootPattern/flows/") {
         $broadImpact = $true
     }
 
-    if ($changedPaths -match '^force-app/main/default/classes/(TriggerHandler|fflib_).+\.cls$') {
+    if ($changedPaths -match "^$metadataRootPattern/classes/(TriggerHandler|fflib_).+\.cls$") {
         $broadImpact = $true
     }
 

@@ -15,7 +15,7 @@ param(
     [string]$TargetOrg,
 
     [Parameter()]
-    [string]$ConfigRoot = 'config\sandbox',
+    [string]$ConfigRoot,
 
     [Parameter()]
     [switch]$SkipIntegrationMetadata,
@@ -35,6 +35,12 @@ param(
 
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
+
+Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
+
+if ([string]::IsNullOrWhiteSpace($ConfigRoot)) {
+    $ConfigRoot = Get-SandboxConfigRootRelativePath
+}
 
 if (-not $SkipIntegrationMetadata.IsPresent) {
     & (Join-Path -Path $PSScriptRoot -ChildPath 'fix-named-credentials.ps1') -TargetOrg $TargetOrg -ConfigRoot $ConfigRoot -DryRun:$DryRun.IsPresent

@@ -26,6 +26,7 @@ $ErrorActionPreference = 'Stop'
 
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath '..\..\..\scripts\salesforce\SalesforceCopilotUtils.psm1') -Force
 
+$metadataRootPattern = [regex]::Escape((Get-MetadataRootRelativePath))
 $effectiveChangedPaths = @($ChangedPath | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 
 if ($effectiveChangedPaths.Count -eq 0) {
@@ -34,7 +35,7 @@ if ($effectiveChangedPaths.Count -eq 0) {
 
 $targetFiles = @(
     $effectiveChangedPaths |
-        Where-Object { $_ -match '^force-app/main/default/.+\.(cls|js|html|page|component)$' } |
+        Where-Object { $_ -match "^$metadataRootPattern/.+\.(cls|js|html|page|component)$" } |
         ForEach-Object { Join-Path -Path (Get-RepositoryRoot) -ChildPath $_ } |
         Where-Object { Test-Path -Path $_ }
 )
