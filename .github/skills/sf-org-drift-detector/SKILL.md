@@ -36,6 +36,10 @@ This skill monitors:
 - [`report-drift.ps1`](./scripts/drift/report-drift.ps1)
 - [`fail-if-prod-drift.ps1`](./scripts/drift/fail-if-prod-drift.ps1)
 
+## Example
+
+- [Sample drift report](./examples/drift-report.json)
+
 ## Typical Workflow
 
 1. Retrieve the monitored metadata from the target org into a temp directory.
@@ -48,3 +52,8 @@ This skill monitors:
 - **Run this before coding on shared metadata**, not after the branch is already deep.
 - **Production drift is usually a release blocker** because the next deploy can overwrite manual fixes.
 - **Custom object retrieval covers many child metadata types**, but the manifest also requests field, record type, and validation rule coverage explicitly to keep the intent obvious.
+
+## Related Skills
+
+- [`sf-delta-builder`](../sf-delta-builder/SKILL.md)
+- [`sf-metadata-healthcheck`](../sf-metadata-healthcheck/SKILL.md)

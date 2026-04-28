@@ -12,6 +12,7 @@ salesforce-copilot/
 │   ├── scripts/
 │   │   └── salesforce/
 │   └── skills/
+│       └── <skill>/examples|templates
 └── docs/
 ```
 
@@ -22,13 +23,14 @@ salesforce-copilot/
 | `.github/instructions/` | File-pattern-based instructions for Copilot |
 | `.github/skills/` | Self-contained skill folders with `SKILL.md` and bundled scripts |
 | `.github/agents/` | Custom agent definitions |
-| `.github/scripts/salesforce/` | Shared PowerShell modules used by several skills |
+| `.github/scripts/salesforce/` | Shared PowerShell modules and shell launchers used by several skills |
 | `docs/` | Human-readable guidance for installation and adaptation |
 
 ## Structural rules
 
 - Keep skills self-contained whenever possible.
 - Use `.github/scripts/salesforce/` only for helpers shared by multiple skills.
+- Keep examples and templates inside the skill that uses them.
 - Do not add unrelated workflows to the public collection by default.
 - Keep the repository easy to browse without requiring a separate catalog site.
 

@@ -24,6 +24,11 @@ By default, these scripts look for optional config files under `config/sandbox/`
 - `permset-assignments.json`
 - `seed-data-plan.json`
 
+Override those defaults with:
+
+- `SALESFORCE_COPILOT_SANDBOX_CONFIG_ROOT`
+- `SALESFORCE_COPILOT_WORK_ROOT`
+
 ## Scripts
 
 - [`post-refresh.ps1`](./scripts/sandbox/post-refresh.ps1)
@@ -32,8 +37,21 @@ By default, these scripts look for optional config files under `config/sandbox/`
 - [`assign-permsets.ps1`](./scripts/sandbox/assign-permsets.ps1)
 - [`load-seed-data.ps1`](./scripts/sandbox/load-seed-data.ps1)
 
+## Templates
+
+- [Example post-refresh package](./templates/post-refresh-package.xml)
+- [Example post-refresh Apex](./templates/post-refresh.apex)
+- [Example integration users config](./templates/integration-users.json)
+- [Example permission set assignments](./templates/permset-assignments.json)
+- [Example seed-data plan](./templates/seed-data-plan.json)
+
 ## Gotchas
 
 - **Keep production integrations disabled by default** in post-refresh Apex or metadata config.
 - **Use fake or sandbox-safe emails** for seeded users and test data.
 - **Treat config files as automation inputs**, not one-off scripts hidden on a laptop.
+
+## Related Skills
+
+- [`sf-metadata-healthcheck`](../sf-metadata-healthcheck/SKILL.md)
+- [`sf-delta-builder`](../sf-delta-builder/SKILL.md)

@@ -51,5 +51,11 @@ Use this skill to build high-signal Apex tests that match the local patterns alr
 
 ## References
 
+- [Template checklist](./templates/apex-test-checklist.md)
 - Nearby test classes in the target project
 - Existing shared test-data helpers or factory utilities
+
+## Related Skills
+
+- [`sf-apex-test-runner`](../sf-apex-test-runner/SKILL.md)
+- [`sf-metadata-healthcheck`](../sf-metadata-healthcheck/SKILL.md)

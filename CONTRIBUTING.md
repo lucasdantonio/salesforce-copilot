@@ -29,6 +29,7 @@ Avoid contributions that:
 - Keep asset descriptions explicit so Copilot can discover them.
 - Prefer standard Salesforce DX folder conventions.
 - If a script depends on a convention, document it clearly.
+- Keep bundled examples and templates generic enough to copy into another repository safely.
 - If an asset is only safe for a narrow workflow, state that in the asset itself.
 
 ## Pull request checklist
@@ -38,6 +39,7 @@ Avoid contributions that:
 - [ ] Relative links and bundled-resource references still work.
 - [ ] New or updated docs are written in English.
 - [ ] PowerShell scripts remain non-interactive unless interaction is the explicit purpose.
+- [ ] New issue or PR metadata uses the repository templates when applicable.
 
 ## Repository layout
 

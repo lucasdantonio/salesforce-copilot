@@ -24,12 +24,26 @@ Use this skill when a task needs a deliberate Apex test scope instead of default
 ## Scripts
 
 - [`detect-test-scope.ps1`](./scripts/detect-test-scope.ps1) chooses the best mode for the current diff.
+- [`detect-test-scope.sh`](./scripts/detect-test-scope.sh) runs the same workflow from a POSIX shell when `pwsh` is installed.
 - [`find-related-tests.ps1`](./scripts/find-related-tests.ps1) lists candidate tests related to changed files.
+- [`find-related-tests.sh`](./scripts/find-related-tests.sh) runs the same workflow from a POSIX shell when `pwsh` is installed.
 - [`print-test-plan.ps1`](./scripts/print-test-plan.ps1) prints a human-readable plan.
+- [`print-test-plan.sh`](./scripts/print-test-plan.sh) runs the same workflow from a POSIX shell when `pwsh` is installed.
 - [`run-apex-tests.ps1`](./scripts/run-apex-tests.ps1) runs the selected scope with Salesforce CLI.
+- [`run-apex-tests.sh`](./scripts/run-apex-tests.sh) runs the same workflow from a POSIX shell when `pwsh` is installed.
+
+## Example
+
+- [Sample changed-related plan](./examples/changed-related-plan.json)
 
 ## Gotchas
 
 - **Changed-related is heuristic**. If the repository impact is broad, prefer `all-local`.
 - **Specified tests still need to exist in the org**. Keep local source and deployed source aligned.
 - **Metadata-only changes can still affect Apex behavior** when they touch objects, flows, layouts, or permissions.
+
+## Related Skills
+
+- [`create-apex-test-class`](../create-apex-test-class/SKILL.md)
+- [`sf-delta-builder`](../sf-delta-builder/SKILL.md)
+- [`sf-metadata-healthcheck`](../sf-metadata-healthcheck/SKILL.md)
