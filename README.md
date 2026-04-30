@@ -34,6 +34,7 @@ This repository packages practical **instructions**, **skills**, **agents**, and
 
 ### Skills
 
+- `copilot-asset-validator`
 - `create-apex-test-class`
 - `sf-apex-test-runner`
 - `sf-delta-builder`
@@ -73,11 +74,18 @@ Some bundled scripts assume that layout. Where that assumption matters, it is do
 
 ## Start with these assets
 
+- Use `copilot-asset-validator` before review when you add or update Copilot assets in this repository.
 - Use `sf-delta-builder` for deploy package generation.
 - Use `sf-metadata-healthcheck` for cheap metadata checks before review or deployment.
 - Use `sf-apex-test-runner` for safer Apex test-scope decisions.
 - Use `create-apex-test-class` when you want reusable Apex testing guidance without repo-local examples.
 - Use `salesforce-copilot-asset-evolver.agent.md` when you want a research-first specialist to identify relevant ecosystem changes and update the repository assets they affect.
+
+## Authoring and validation
+
+- Run `copilot-asset-validator` before opening a PR that changes instructions, skills, agents, docs, or bundled scripts.
+- Use the [asset type decision guide](./docs/asset-type-decision-guide.md) when deciding between an instruction, skill, agent, or shared script.
+- Use the [asset authoring checklist](./docs/asset-authoring-checklist.md) while drafting new assets.
 
 ## What is intentionally out of scope
 
@@ -92,6 +100,8 @@ Some bundled scripts assume that layout. Where that assumption matters, it is do
 - [Repository structure](./docs/structure.md)
 - [Migration guide](./docs/migration-guide.md)
 - [Asset inventory](./docs/asset-inventory.md)
+- [Asset type decision guide](./docs/asset-type-decision-guide.md)
+- [Asset authoring checklist](./docs/asset-authoring-checklist.md)
 
 ## License
 

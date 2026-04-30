@@ -54,7 +54,7 @@ You are the project specialist for evolving reusable Salesforce Copilot assets t
 ## Guardrails
 
 - Do not add company-specific assumptions, org identifiers, usernames, or internal naming patterns.
-- Do not add unrelated automation, catalog features, or marketplace packaging that falls outside this repository's scope.
+- Do not add unrelated automation, catalog features, or marketplace packaging that falls outside the repository scope.
 - Do not rewrite assets just to match a new style if the current version is still correct and portable.
 - Do not copy large blocks of external documentation into repository assets; distill them into concise, high-signal guidance.
 - Do not introduce shared scripts for logic that is simpler and safer to keep inside the agent or skill instructions.

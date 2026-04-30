@@ -28,6 +28,8 @@ Several skills import helper modules from:
 
 If you copy a skill folder without those shared modules, some scripts will fail to import required functions.
 
+The `copilot-asset-validator` skill is self-contained and does not depend on `.github/scripts/salesforce/`.
+
 ## Project assumptions
 
 The current version assumes common Salesforce DX conventions such as:
@@ -41,7 +43,8 @@ If your project uses a different layout, adapt the copied scripts or document yo
 ## Suggested first rollout
 
 1. Install all instruction files.
-2. Install `sf-delta-builder`.
-3. Install `sf-metadata-healthcheck`.
-4. Install `sf-apex-test-runner`.
-5. Add the remaining skills only after validating they fit your project workflow.
+2. Install `copilot-asset-validator`.
+3. Install `sf-delta-builder`.
+4. Install `sf-metadata-healthcheck`.
+5. Install `sf-apex-test-runner`.
+6. Add the remaining skills only after validating they fit your project workflow.
